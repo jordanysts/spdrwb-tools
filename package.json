@@ -1,0 +1,32 @@
+{
+  "name": "spdrwb-tools",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "framer-motion": "^11.3.8",
+    "lucide-react": "^0.416.0",
+    "fal-client": "^0.14.0",
+    "replicate": "^0.31.1",
+    "openai": "^4.52.0",
+    "@google/generative-ai": "^0.12.0",
+    "browser-image-compression": "^2.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8",
+    "autoprefixer": "^10"
+  }
+}
