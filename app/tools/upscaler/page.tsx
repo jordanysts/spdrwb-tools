@@ -3,10 +3,6 @@
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft, Upload, Download, Loader2, Maximize, ImageIcon, Sliders } from "lucide-react";
-import {
-    ReactCompareSlider,
-    ReactCompareSliderImage
-} from "react-compare-slider";
 import { upscaleImage } from "./actions";
 import { compressImage } from "@/lib/image-compression";
 
@@ -340,28 +336,15 @@ export default function UpscalerPage() {
                                         <p className="text-gray-500 text-xs mt-2">This may take up to a minute</p>
                                     </div>
                                 ) : outputImage && inputImage ? (
-                                    <div className="max-h-full max-w-full">
-                                        <ReactCompareSlider
-                                            itemOne={
-                                                <ReactCompareSliderImage
-                                                    src={inputImage}
-                                                    alt="Before"
-                                                    style={{ objectFit: "contain" }}
-                                                />
-                                            }
-                                            itemTwo={
-                                                <ReactCompareSliderImage
-                                                    src={outputImage}
-                                                    alt="After"
-                                                    style={{ objectFit: "contain" }}
-                                                />
-                                            }
-                                            style={{
-                                                maxHeight: "100%",
-                                                maxWidth: "100%",
-                                                borderRadius: "0.5rem",
-                                            }}
-                                        />
+                                    <div className="flex gap-4 h-full w-full">
+                                        <div className="flex-1 min-w-0 bg-zinc-100 rounded-lg overflow-hidden relative">
+                                            <span className="absolute top-2 left-2 bg-black/50 text-white px-2 py-0.5 text-xs rounded backdrop-blur-sm z-10">Before</span>
+                                            <img src={inputImage} alt="Before" className="w-full h-full object-contain" />
+                                        </div>
+                                        <div className="flex-1 min-w-0 bg-zinc-100 rounded-lg overflow-hidden relative">
+                                            <span className="absolute top-2 left-2 bg-orange-500/80 text-white px-2 py-0.5 text-xs rounded backdrop-blur-sm z-10">After</span>
+                                            <img src={outputImage} alt="After" className="w-full h-full object-contain" />
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="text-center">
