@@ -74,7 +74,7 @@ async function generateWithGemini(prompt: string, aspectRatio: string, imageSize
                 // Only set imageSize for gemini-3-pro-image-preview
                 ...(modelName === "gemini-3-pro-image-preview" ? { imageSize: imageSize } : {}),
             },
-        },
+        } as any,
     });
 
     const result = response.candidates?.[0]?.content?.parts;

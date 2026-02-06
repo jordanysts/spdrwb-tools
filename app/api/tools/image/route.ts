@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         imageConfig: {
           aspectRatio: aspectRatio,
         },
-      },
+      } as any,
     });
 
     // Extract image and text from response
