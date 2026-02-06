@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   ArrowLeft,
   Download,
@@ -15,10 +16,16 @@ import {
 import Link from "next/link";
 import { generateExpression } from "./actions";
 import { compressImage } from "@/lib/image-compression";
-import {
-  ReactCompareSlider,
-  ReactCompareSliderImage
-} from "react-compare-slider";
+
+// Dynamic import to avoid SSR issues
+const ReactCompareSlider = dynamic(
+  () => import("react-compare-slider").then((mod) => mod.ReactCompareSlider),
+  { ssr: false }
+);
+const ReactCompareSliderImage = dynamic(
+  () => import("react-compare-slider").then((mod) => mod.ReactCompareSliderImage),
+  { ssr: false }
+) as any;
 
 interface ExpressionParams {
   rotate_pitch: number;
