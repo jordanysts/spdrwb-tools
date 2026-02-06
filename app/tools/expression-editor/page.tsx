@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import dynamic from "next/dynamic";
 import {
   ArrowLeft,
   Download,
@@ -16,16 +15,6 @@ import {
 import Link from "next/link";
 import { generateExpression } from "./actions";
 import { compressImage } from "@/lib/image-compression";
-
-// Dynamic import to avoid SSR issues
-const ReactCompareSlider = dynamic(
-  () => import("react-compare-slider").then((mod) => mod.ReactCompareSlider),
-  { ssr: false }
-);
-const ReactCompareSliderImage = dynamic(
-  () => import("react-compare-slider").then((mod) => mod.ReactCompareSliderImage),
-  { ssr: false }
-) as any;
 
 interface ExpressionParams {
   rotate_pitch: number;
@@ -904,13 +893,6 @@ export default function ExpressionEditorPage() {
               >
 
                 {isComparing && inputImage ? (
-                  comparisonMode === 'slider' ? (
-                    <ReactCompareSlider
-                      itemOne={<ReactCompareSliderImage src={inputImage} alt="Original" style={{ objectFit: 'contain' }} />}
-                      itemTwo={<ReactCompareSliderImage src={compositeImage} alt="Result" style={{ objectFit: 'contain' }} />}
-                      style={{ width: '100%', height: '100%' }}
-                    />
-                  ) : (
                     <div className="flex gap-2 h-full w-full">
                       <div className="flex-1 min-w-0 bg-zinc-100 rounded-lg overflow-hidden relative">
                         <span className="absolute top-2 left-2 bg-black/50 text-gray-900 px-2 py-0.5 text-[10px] rounded backdrop-blur-sm z-10">Original</span>
@@ -921,7 +903,6 @@ export default function ExpressionEditorPage() {
                         <img src={compositeImage} alt="Result" className="w-full h-full object-contain" />
                       </div>
                     </div>
-                  )
                 ) : (
                   <img src={compositeImage} alt="Composite" className="max-h-full max-w-full object-contain" draggable={false} />
                 )}
