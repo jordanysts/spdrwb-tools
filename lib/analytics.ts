@@ -140,7 +140,7 @@ export async function getAnalytics(days: number = 7): Promise<DailyStats[]> {
     date.setDate(date.getDate() - i)
     const dateKey = date.toISOString().split('T')[0]
     const stats = await loadDailyStats(dateKey)
-    if (stats.totalApiCalls > 0 || stats.totalPageViews > 0) {
+    if (stats.totalApiCalls > 0 || stats.totalPageViews > 0 || (stats.totalProviderCalls || 0) > 0) {
       results.push(stats)
     }
   }

@@ -26,7 +26,6 @@ import {
   HelpCircle,
   Loader2,
   X,
-  BarChart3,
 } from 'lucide-react'
 
 const toolSections = [
@@ -215,13 +214,7 @@ export default function HomePage() {
           <h1 className="text-3xl font-bold text-white tracking-wide">
             STS Generative Tools
           </h1>
-          <Link
-            href="/analytics"
-            className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-sm"
-          >
-            <BarChart3 className="w-4 h-4" />
-            Analytics
-          </Link>
+          <div className="w-20" />
         </div>
       </div>
 
