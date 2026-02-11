@@ -313,9 +313,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-4">
-          <img src="/jordanyspin.gif" alt="System" className="w-12 h-12 rounded-full" />
-        </div>
       </main>
 
       {/* Feedback Submit Modal */}
