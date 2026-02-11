@@ -294,7 +294,7 @@ export default function UpscalerPage() {
                         <button
                             onClick={handleUpscale}
                             disabled={!inputImage || isProcessing}
-                            className="w-full py-3 bg-gray-900 hover:bg-gray-800 disabled:bg-white disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-gray-900 text-white hover:bg-gray-800 disabled:bg-white disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                         >
                             {isProcessing ? (
                                 <>

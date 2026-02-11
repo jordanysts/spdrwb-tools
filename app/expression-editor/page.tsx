@@ -659,7 +659,7 @@ export default function ExpressionEditorPage() {
               <button
                 onClick={generateImage}
                 disabled={!inputImage || isGenerating}
-                className="flex-1 py-3 bg-gray-900 hover:bg-gray-800 disabled:bg-white disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-gray-900 text-white hover:bg-gray-800 disabled:bg-white disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
                 {isGenerating ? (
                   <>
@@ -678,7 +678,7 @@ export default function ExpressionEditorPage() {
                 <button
                   onClick={handleComposite}
                   disabled={!outputImage || !inputImage || isCompositing}
-                  className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 disabled:bg-white disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+                  className="w-full py-2.5 bg-gray-900 text-white hover:bg-gray-800 disabled:bg-white disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
                 >
                   {isCompositing ? (
                     <>
@@ -868,8 +868,8 @@ export default function ExpressionEditorPage() {
                     <button
                       onClick={() => setIsComparing(!isComparing)}
                       className={`w-full py-2 rounded text-sm transition-colors flex items-center justify-center gap-2 ${isComparing
-                        ? 'bg-gray-900 text-gray-900 hover:bg-orange-700'
-                        : 'bg-gray-50 hover:bg-zinc-600 text-white'
+                        ? 'bg-orange-600 text-white hover:bg-orange-700'
+                        : 'bg-gray-900 text-white hover:bg-gray-800'
                         }`}
                     >
                       <Layers className="w-4 h-4" />
@@ -900,11 +900,11 @@ export default function ExpressionEditorPage() {
                 {isComparing && inputImage ? (
                     <div className="flex gap-2 h-full w-full">
                       <div className="flex-1 min-w-0 bg-zinc-100 rounded-lg overflow-hidden relative">
-                        <span className="absolute top-2 left-2 bg-black/50 text-gray-900 px-2 py-0.5 text-[10px] rounded backdrop-blur-sm z-10">Original</span>
+                        <span className="absolute top-2 left-2 bg-black/70 text-white px-2 py-0.5 text-[10px] rounded backdrop-blur-sm z-10">Original</span>
                         <img src={inputImage} alt="Original" className="w-full h-full object-contain" />
                       </div>
                       <div className="flex-1 min-w-0 bg-zinc-100 rounded-lg overflow-hidden relative">
-                        <span className="absolute top-2 left-2 bg-gray-800/80 text-gray-900 px-2 py-0.5 text-[10px] rounded backdrop-blur-sm z-10">Result</span>
+                        <span className="absolute top-2 left-2 bg-gray-800/80 text-white px-2 py-0.5 text-[10px] rounded backdrop-blur-sm z-10">Result</span>
                         <img src={compositeImage} alt="Result" className="w-full h-full object-contain" />
                       </div>
                     </div>
@@ -919,20 +919,20 @@ export default function ExpressionEditorPage() {
                       <div className="flex bg-gray-100/80 backdrop-blur-sm rounded-lg p-1 border border-gray-200">
                         <button
                           onClick={() => setComparisonMode('slider')}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-colors ${comparisonMode === 'slider' ? 'bg-gray-50 text-white' : 'text-gray-600 hover:text-white'
+                          className={`px-3 py-1 rounded text-xs font-medium transition-colors ${comparisonMode === 'slider' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900'
                             }`}
                         >
                           Slider
                         </button>
                         <button
                           onClick={() => setComparisonMode('side-by-side')}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-colors ${comparisonMode === 'side-by-side' ? 'bg-gray-50 text-white' : 'text-gray-600 hover:text-white'
+                          className={`px-3 py-1 rounded text-xs font-medium transition-colors ${comparisonMode === 'side-by-side' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900'
                             }`}
                         >
                           Side-by-Side
                         </button>
                       </div>
-                      <span className="bg-black/50 text-gray-900 px-3 py-1 rounded-full text-xs backdrop-blur-sm">
+                      <span className="bg-black/70 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
                         Comparing Original vs Result
                       </span>
                     </>

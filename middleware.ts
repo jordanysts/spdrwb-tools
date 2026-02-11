@@ -1,6 +1,5 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
-import { trackEvent } from "@/lib/analytics"
 
 // Simple in-memory rate limiter for API routes
 const apiRateMap = new Map<string, { count: number; resetAt: number }>()
@@ -93,17 +92,15 @@ export default auth((req) => {
       )
     }
 
-    // Track API usage (fire-and-forget - don't block the response)
-    const userEmail = req.auth?.user?.email || 'unknown'
-    const apiPath = req.nextUrl.pathname.split('/').slice(0, 4).join('/') // e.g. /api/tools/image
-    // Skip tracking analytics calls to avoid recursion
-    if (!req.nextUrl.pathname.includes('/analytics')) {
-      trackEvent({
-        type: 'api_call',
-        path: apiPath,
-        user: userEmail,
-        timestamp: new Date().toISOString(),
-      }).catch(() => {}) // Silently ignore tracking failures
+    // Track API usage via fetch to analytics endpoint (Edge Runtime compatible)
+    const apiPath = req.nextUrl.pathname.split('/').slice(0, 4).join('/')
+    if (!req.nextUrl.pathname.includes('/analytics') && !req.nextUrl.pathname.includes('/auth')) {
+      const origin = req.nextUrl.origin
+      fetch(`${origin}/api/tools/analytics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: apiPath, type: 'api_call' }),
+      }).catch(() => {})
     }
 
     const response = NextResponse.next()
