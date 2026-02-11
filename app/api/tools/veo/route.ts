@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { trackEvent } from '@/lib/analytics';
+import { auth } from '@/auth';
 
 export const maxDuration = 300; // 5 minutes for video generation
 
@@ -14,6 +16,18 @@ export async function POST(request: NextRequest) {
         }
 
         if (action === 'generate') {
+            // Track provider call
+            try {
+                const session = await auth();
+                trackEvent({
+                    type: 'provider_call',
+                    path: '/api/tools/veo',
+                    user: session?.user?.email || 'unknown',
+                    timestamp: new Date().toISOString(),
+                    provider: 'google-veo',
+                }).catch(() => {});
+            } catch {}
+
             // Generate video with Veo using the SDK
             const veoModel = model || 'veo-3.1-generate-preview';
             console.log(`Veo: Starting video generation with model ${veoModel}`);

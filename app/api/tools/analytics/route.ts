@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAnalytics, trackEvent } from '@/lib/analytics'
+import { auth } from '@/auth'
 
 // GET - Retrieve analytics data
 export async function GET(request: NextRequest) {
@@ -13,12 +14,15 @@ export async function GET(request: NextRequest) {
     // Compute summary
     let totalApiCalls = 0
     let totalPageViews = 0
+    let totalProviderCalls = 0
     const allUsers = new Set<string>()
     const toolUsage: Record<string, { total: number; users: Record<string, number> }> = {}
+    const providerUsage: Record<string, { total: number; users: Record<string, number> }> = {}
 
     for (const day of stats) {
       totalApiCalls += day.totalApiCalls
       totalPageViews += day.totalPageViews
+      totalProviderCalls += (day.totalProviderCalls || 0)
       day.uniqueUsers.forEach(u => allUsers.add(u))
 
       // Merge API calls
@@ -43,16 +47,31 @@ export async function GET(request: NextRequest) {
           toolUsage[key].users[user] = (toolUsage[key].users[user] || 0) + count
         }
       }
+
+      // Merge provider calls
+      if (day.providerCalls) {
+        for (const [provider, data] of Object.entries(day.providerCalls)) {
+          if (!providerUsage[provider]) {
+            providerUsage[provider] = { total: 0, users: {} }
+          }
+          providerUsage[provider].total += data.total
+          for (const [user, count] of Object.entries(data.users)) {
+            providerUsage[provider].users[user] = (providerUsage[provider].users[user] || 0) + count
+          }
+        }
+      }
     }
 
     return NextResponse.json({
       summary: {
         totalApiCalls,
         totalPageViews,
+        totalProviderCalls,
         uniqueUsers: allUsers.size,
         days: clampedDays,
       },
       toolUsage,
+      providerUsage,
       dailyStats: stats,
     })
   } catch (error) {
@@ -61,21 +80,26 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Track a page view event from client
+// POST - Track a page view or provider call event
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { path, user } = body
+    const { path, type: eventType, provider } = body
 
     if (!path) {
       return NextResponse.json({ error: 'Path is required' }, { status: 400 })
     }
 
+    // Get user from server session (not client)
+    const session = await auth()
+    const userEmail = session?.user?.email || 'anonymous'
+
     await trackEvent({
-      type: 'page_view',
+      type: eventType || 'page_view',
       path,
-      user: user || 'anonymous',
+      user: userEmail,
       timestamp: new Date().toISOString(),
+      provider: provider || undefined,
     })
 
     return NextResponse.json({ success: true })

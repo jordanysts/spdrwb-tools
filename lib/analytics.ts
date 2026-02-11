@@ -1,18 +1,21 @@
 import { put, list } from '@vercel/blob'
 
 export interface AnalyticsEvent {
-  type: 'api_call' | 'page_view'
+  type: 'api_call' | 'page_view' | 'provider_call'
   path: string
   user: string
   timestamp: string
+  provider?: string // e.g. 'google', 'replicate', 'fal', 'runway', 'elevenlabs'
 }
 
 export interface DailyStats {
   date: string
   apiCalls: Record<string, { total: number; users: Record<string, number> }>
   pageViews: Record<string, { total: number; users: Record<string, number> }>
+  providerCalls: Record<string, { total: number; users: Record<string, number> }>
   totalApiCalls: number
   totalPageViews: number
+  totalProviderCalls: number
   uniqueUsers: string[]
 }
 
@@ -29,8 +32,10 @@ async function loadDailyStats(date: string): Promise<DailyStats> {
     date,
     apiCalls: {},
     pageViews: {},
+    providerCalls: {},
     totalApiCalls: 0,
     totalPageViews: 0,
+    totalProviderCalls: 0,
     uniqueUsers: [],
   }
 
@@ -80,8 +85,21 @@ export async function trackEvent(event: AnalyticsEvent): Promise<void> {
     const date = getDateKey()
     const stats = await loadDailyStats(date)
 
-    const bucket = event.type === 'api_call' ? stats.apiCalls : stats.pageViews
-    const path = event.path
+    // Determine which bucket to use
+    let bucket: Record<string, { total: number; users: Record<string, number> }>
+    if (event.type === 'provider_call') {
+      if (!stats.providerCalls) stats.providerCalls = {}
+      bucket = stats.providerCalls
+    } else if (event.type === 'api_call') {
+      bucket = stats.apiCalls
+    } else {
+      bucket = stats.pageViews
+    }
+
+    // For provider calls, use provider name as the key
+    const path = event.type === 'provider_call' && event.provider
+      ? event.provider
+      : event.path
 
     if (!bucket[path]) {
       bucket[path] = { total: 0, users: {} }
@@ -90,7 +108,10 @@ export async function trackEvent(event: AnalyticsEvent): Promise<void> {
     bucket[path].total++
     bucket[path].users[event.user] = (bucket[path].users[event.user] || 0) + 1
 
-    if (event.type === 'api_call') {
+    if (event.type === 'provider_call') {
+      if (!stats.totalProviderCalls) stats.totalProviderCalls = 0
+      stats.totalProviderCalls++
+    } else if (event.type === 'api_call') {
       stats.totalApiCalls++
     } else {
       stats.totalPageViews++

@@ -1,10 +1,26 @@
 'use server';
 
 import { GoogleGenAI, Modality } from "@google/genai";
+import { trackEvent } from "@/lib/analytics";
+import { auth } from "@/auth";
 
 const GOOGLE_AI_KEY = process.env.GOOGLE_AI_KEY;
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 const BFL_API_KEY = process.env.BFL_API_KEY;
+
+async function trackProvider(provider: string, path: string) {
+  try {
+    const session = await auth();
+    const user = session?.user?.email || 'unknown';
+    trackEvent({
+      type: 'provider_call',
+      path,
+      user,
+      timestamp: new Date().toISOString(),
+      provider,
+    }).catch(() => {});
+  } catch {}
+}
 
 // Retry helper with exponential backoff (from spdrstudio photobooth)
 async function retryWithBackoff<T>(
@@ -286,6 +302,9 @@ export async function generateImageAction({
             return { success: false, error: 'Flux Klein does not support image references. Please use Gemini or SeeDream for image-to-image.' };
         }
 
+        // Determine provider for tracking
+        const providerName = model === "seedream" ? "replicate" : model === "flux-klein" ? "bfl" : "google";
+
         // Retry logic with exponential backoff
         generatedImage = await retryWithBackoff(async () => {
             if (model === "seedream") {
@@ -296,6 +315,9 @@ export async function generateImageAction({
                 return await generateWithGemini(prompt, aspectRatio, imageSize, actualModel, image);
             }
         }, 3, 3000); // 3 retries, starting with 3 second delay
+
+        // Track the provider call after successful generation
+        await trackProvider(providerName, '/image-generator');
 
         return { success: true, output: generatedImage };
 

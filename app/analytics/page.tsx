@@ -12,6 +12,7 @@ import {
   Loader2,
   Calendar,
   TrendingUp,
+  Cloud,
 } from 'lucide-react'
 
 interface ToolUsageEntry {
@@ -32,11 +33,34 @@ interface AnalyticsData {
   summary: {
     totalApiCalls: number
     totalPageViews: number
+    totalProviderCalls: number
     uniqueUsers: number
     days: number
   }
   toolUsage: Record<string, ToolUsageEntry>
+  providerUsage: Record<string, ToolUsageEntry>
   dailyStats: DailyStats[]
+}
+
+// Friendly names for providers
+const providerNames: Record<string, string> = {
+  'google': 'Google Gemini',
+  'google-veo': 'Google Veo',
+  'replicate': 'Replicate (SeeDream)',
+  'bfl': 'Black Forest Labs (Flux)',
+  'runway': 'Runway',
+  'elevenlabs': 'ElevenLabs',
+  'fal': 'FAL.ai',
+}
+
+const providerColors: Record<string, string> = {
+  'google': 'bg-blue-500',
+  'google-veo': 'bg-red-500',
+  'replicate': 'bg-purple-500',
+  'bfl': 'bg-amber-500',
+  'runway': 'bg-teal-500',
+  'elevenlabs': 'bg-pink-500',
+  'fal': 'bg-indigo-500',
 }
 
 // Friendly names for API routes
@@ -78,7 +102,7 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [days, setDays] = useState(7)
-  const [activeTab, setActiveTab] = useState<'api' | 'pages' | 'users'>('api')
+  const [activeTab, setActiveTab] = useState<'providers' | 'api' | 'pages' | 'users'>('providers')
 
   const fetchAnalytics = useCallback(async () => {
     setLoading(true)
@@ -96,6 +120,13 @@ export default function AnalyticsPage() {
   useEffect(() => {
     fetchAnalytics()
   }, [fetchAnalytics])
+
+  // Provider entries
+  const providerEntries = data
+    ? Object.entries(data.providerUsage || {}).sort((a, b) => b[1].total - a[1].total)
+    : []
+
+  const maxProviderCount = providerEntries.length > 0 ? providerEntries[0][1].total : 1
 
   // Split tool usage into API calls and page views
   const apiEntries = data
@@ -176,10 +207,26 @@ export default function AnalyticsPage() {
         {!loading && data && (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-4 gap-4 mb-8">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
+                className="bg-gray-50 border border-gray-200 rounded-2xl p-5"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-orange-100">
+                    <Cloud className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Provider Calls</span>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{(data.summary.totalProviderCalls || 0).toLocaleString()}</p>
+                <p className="text-xs text-gray-400 mt-1">Last {data.summary.days} day{data.summary.days > 1 ? 's' : ''}</p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
                 className="bg-gray-50 border border-gray-200 rounded-2xl p-5"
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -195,7 +242,7 @@ export default function AnalyticsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
+                transition={{ delay: 0.1 }}
                 className="bg-gray-50 border border-gray-200 rounded-2xl p-5"
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -211,7 +258,7 @@ export default function AnalyticsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+                transition={{ delay: 0.15 }}
                 className="bg-gray-50 border border-gray-200 rounded-2xl p-5"
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -260,6 +307,7 @@ export default function AnalyticsPage() {
             {/* Tabs */}
             <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
               {([
+                { key: 'providers' as const, label: 'Providers', count: providerEntries.length },
                 { key: 'api' as const, label: 'API Usage', count: apiEntries.length },
                 { key: 'pages' as const, label: 'Page Views', count: pageEntries.length },
                 { key: 'users' as const, label: 'Users', count: userEntries.length },
@@ -278,6 +326,46 @@ export default function AnalyticsPage() {
                 </button>
               ))}
             </div>
+
+            {/* Providers Tab */}
+            {activeTab === 'providers' && (
+              <div className="space-y-3">
+                {providerEntries.length === 0 && (
+                  <p className="text-center text-gray-400 py-10">No provider calls recorded yet. Use the tools to start tracking.</p>
+                )}
+                {providerEntries.map(([provider, entry]) => (
+                  <div key={provider} className="border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${providerColors[provider] || 'bg-gray-500'}`} />
+                        <div>
+                          <h4 className="font-semibold text-gray-900 text-sm">{providerNames[provider] || provider}</h4>
+                          <p className="text-xs text-gray-400">{provider}</p>
+                        </div>
+                      </div>
+                      <span className="text-lg font-bold text-gray-900">{entry.total.toLocaleString()}</span>
+                    </div>
+                    {/* Bar */}
+                    <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
+                      <div
+                        className={`${providerColors[provider] || 'bg-gray-500'} rounded-full h-2 transition-all`}
+                        style={{ width: `${(entry.total / maxProviderCount) * 100}%` }}
+                      />
+                    </div>
+                    {/* User breakdown */}
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(entry.users)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([user, count]) => (
+                          <span key={user} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
+                            {user.split('@')[0]} <span className="text-gray-400">({count})</span>
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* API Usage Tab */}
             {activeTab === 'api' && (

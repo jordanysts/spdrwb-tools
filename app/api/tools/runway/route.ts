@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { trackEvent } from '@/lib/analytics';
+import { auth } from '@/auth';
 
 const RUNWAY_API_KEY = process.env.RUNWAY_API_KEY;
 const RUNWAY_API_URL = 'https://api.dev.runwayml.com/v1';
@@ -32,8 +34,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data);
     }
 
-    // Create new generation task
+    // Create new generation task (track provider call)
     if (action === 'generate') {
+      try {
+        const session = await auth();
+        trackEvent({
+          type: 'provider_call',
+          path: '/api/tools/runway',
+          user: session?.user?.email || 'unknown',
+          timestamp: new Date().toISOString(),
+          provider: 'runway',
+        }).catch(() => {});
+      } catch {}
       // Build the request body based on Runway API specs
       const requestBody: Record<string, unknown> = {
         model: model || 'gen3a_turbo',

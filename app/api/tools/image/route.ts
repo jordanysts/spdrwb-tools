@@ -1,5 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
+import { trackEvent } from "@/lib/analytics";
+import { auth } from "@/auth";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY || "" });
 
@@ -63,6 +65,18 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Track provider call
+    try {
+      const session = await auth();
+      trackEvent({
+        type: 'provider_call',
+        path: '/api/tools/image',
+        user: session?.user?.email || 'unknown',
+        timestamp: new Date().toISOString(),
+        provider: 'google',
+      }).catch(() => {});
+    } catch {}
 
     return NextResponse.json({
       image: imageData,
