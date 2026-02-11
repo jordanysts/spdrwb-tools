@@ -212,7 +212,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="w-20" />
           <h1 className="text-3xl font-bold text-white tracking-wide">
-            STS Generative Tools
+            Subtropic Generative Tools
           </h1>
           <div className="w-20" />
         </div>
