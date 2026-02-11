@@ -19,6 +19,13 @@ import {
   Film,
   Palmtree,
   Mic,
+  MessageSquarePlus,
+  Bug,
+  Lightbulb,
+  TrendingUp,
+  HelpCircle,
+  Loader2,
+  X,
 } from 'lucide-react'
 
 const toolSections = [
@@ -119,7 +126,63 @@ const toolSections = [
   },
 ]
 
+const typeConfig = {
+  bug: { label: 'Bug', icon: Bug, color: 'text-red-600' },
+  feature: { label: 'Feature', icon: Lightbulb, color: 'text-amber-600' },
+  improvement: { label: 'Improvement', icon: TrendingUp, color: 'text-blue-600' },
+  other: { label: 'Other', icon: HelpCircle, color: 'text-gray-600' },
+}
+
+const toolOptions = [
+  'General',
+  'AI Image Generator',
+  'Expression Editor',
+  'AI Image Editor',
+  'Image Resizer',
+  'Image Upscaler',
+  'AI Video Tool',
+  'Audio Generator',
+  'Audio Editor',
+  'Snap AR Camera Kit',
+  'WebAR Hub',
+  'Subtropic Photobooth',
+]
+
 export default function HomePage() {
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [submitForm, setSubmitForm] = useState({
+    type: 'feature' as 'bug' | 'feature' | 'improvement' | 'other',
+    title: '',
+    description: '',
+    tool: 'General',
+  })
+
+  const handleFeedbackSubmit = async () => {
+    if (!submitForm.title.trim()) return
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/tools/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitForm),
+      })
+      if (res.ok) {
+        setSubmitted(true)
+        setTimeout(() => {
+          setShowFeedbackModal(false)
+          setSubmitted(false)
+          setSubmitForm({ type: 'feature', title: '', description: '', tool: 'General' })
+        }, 1500)
+      }
+    } catch (err) {
+      console.error('Failed to submit feedback:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     toolSections.forEach(s => {
@@ -214,11 +277,162 @@ export default function HomePage() {
           ))}
         </div>
 
-        <div className="mt-20 flex flex-col items-center justify-center gap-4">
+        {/* Feedback Section */}
+        <div className="mt-16 max-w-5xl mx-auto">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-black">
+                <MessageSquarePlus className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Have feedback or a request?</h3>
+                <p className="text-sm text-gray-500">Submit feature requests, report bugs, or suggest improvements.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/feedback"
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+              >
+                View Board
+              </Link>
+              <button
+                onClick={() => setShowFeedbackModal(true)}
+                className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+              >
+                Submit Request
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col items-center justify-center gap-4">
           <img src="/jordanyspin.gif" alt="System" className="w-12 h-12 rounded-full" />
-          <p className="text-xs text-gray-400 font-mono">any feedback or suggestions, pls slack me</p>
         </div>
       </main>
+
+      {/* Feedback Submit Modal */}
+      {showFeedbackModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowFeedbackModal(false) }}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-2xl w-full max-w-lg shadow-xl"
+          >
+            {submitted ? (
+              <div className="p-10 text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Submitted!</h3>
+                <p className="text-sm text-gray-500">Your feedback has been received.</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-1">
+                    <h2 className="text-xl font-bold text-gray-900">Submit Feedback</h2>
+                    <button onClick={() => setShowFeedbackModal(false)} className="text-gray-400 hover:text-gray-600">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-6">Request a feature, report a bug, or suggest improvements.</p>
+
+                  <div className="space-y-4">
+                    {/* Type */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Type</label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {(Object.entries(typeConfig) as ['bug' | 'feature' | 'improvement' | 'other', typeof typeConfig.bug][]).map(([key, cfg]) => {
+                          const Icon = cfg.icon
+                          return (
+                            <button
+                              key={key}
+                              onClick={() => setSubmitForm(prev => ({ ...prev, type: key }))}
+                              className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs font-medium transition-all ${
+                                submitForm.type === key
+                                  ? 'border-black bg-gray-50 text-gray-900'
+                                  : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                              }`}
+                            >
+                              <Icon className={`w-4 h-4 ${submitForm.type === key ? cfg.color : ''}`} />
+                              {cfg.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Title */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Title *</label>
+                      <input
+                        type="text"
+                        value={submitForm.title}
+                        onChange={(e) => setSubmitForm(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Brief summary of your request..."
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      />
+                    </div>
+
+                    {/* Tool */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Related Tool</label>
+                      <select
+                        value={submitForm.tool}
+                        onChange={(e) => setSubmitForm(prev => ({ ...prev, tool: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      >
+                        {toolOptions.map(t => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Description</label>
+                      <textarea
+                        value={submitForm.description}
+                        onChange={(e) => setSubmitForm(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Describe your request in detail (optional)..."
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modal Actions */}
+                <div className="border-t border-gray-100 px-6 py-4 flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowFeedbackModal(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleFeedbackSubmit}
+                    disabled={!submitForm.title.trim() || submitting}
+                    className="px-5 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    Submit
+                  </button>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
