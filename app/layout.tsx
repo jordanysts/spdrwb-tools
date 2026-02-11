@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SPDRWB Tools - AI Creative Tools',
+  title: 'STS Generative Tools',
   description: 'Collection of AI-powered creative tools for image, video, and audio generation',
 }
 
