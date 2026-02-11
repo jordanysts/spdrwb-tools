@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
+import { trackEvent } from "@/lib/analytics"
 
 // Simple in-memory rate limiter for API routes
 const apiRateMap = new Map<string, { count: number; resetAt: number }>()
@@ -90,6 +91,19 @@ export default auth((req) => {
           },
         }
       )
+    }
+
+    // Track API usage (fire-and-forget - don't block the response)
+    const userEmail = req.auth?.user?.email || 'unknown'
+    const apiPath = req.nextUrl.pathname.split('/').slice(0, 4).join('/') // e.g. /api/tools/image
+    // Skip tracking analytics calls to avoid recursion
+    if (!req.nextUrl.pathname.includes('/analytics')) {
+      trackEvent({
+        type: 'api_call',
+        path: apiPath,
+        user: userEmail,
+        timestamp: new Date().toISOString(),
+      }).catch(() => {}) // Silently ignore tracking failures
     }
 
     const response = NextResponse.next()
