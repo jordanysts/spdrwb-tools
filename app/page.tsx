@@ -152,6 +152,7 @@ export default function HomePage() {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [submitForm, setSubmitForm] = useState({
     type: 'feature' as 'bug' | 'feature' | 'improvement' | 'other',
     title: '',
@@ -162,6 +163,7 @@ export default function HomePage() {
   const handleFeedbackSubmit = async () => {
     if (!submitForm.title.trim()) return
     setSubmitting(true)
+    setSubmitError('')
     try {
       const res = await fetch('/api/tools/feedback', {
         method: 'POST',
@@ -173,11 +175,16 @@ export default function HomePage() {
         setTimeout(() => {
           setShowFeedbackModal(false)
           setSubmitted(false)
+          setSubmitError('')
           setSubmitForm({ type: 'feature', title: '', description: '', tool: 'General' })
         }, 1500)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setSubmitError(data.error || `Submit failed (${res.status})`)
       }
     } catch (err) {
       console.error('Failed to submit feedback:', err)
+      setSubmitError('Network error - please try again')
     } finally {
       setSubmitting(false)
     }
@@ -411,10 +418,17 @@ export default function HomePage() {
                   </div>
                 </div>
 
+                {/* Error Message */}
+                {submitError && (
+                  <div className="mx-6 mb-2 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+                    {submitError}
+                  </div>
+                )}
+
                 {/* Modal Actions */}
                 <div className="border-t border-gray-100 px-6 py-4 flex justify-end gap-3">
                   <button
-                    onClick={() => setShowFeedbackModal(false)}
+                    onClick={() => { setShowFeedbackModal(false); setSubmitError('') }}
                     className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
                   >
                     Cancel
