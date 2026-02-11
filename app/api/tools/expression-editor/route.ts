@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { trackEvent } from '@/lib/analytics';
+import { auth } from '@/auth';
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 
@@ -39,6 +41,18 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Track provider call
+    try {
+      const session = await auth();
+      trackEvent({
+        type: 'provider_call',
+        path: '/api/tools/expression-editor',
+        user: session?.user?.email || 'unknown',
+        timestamp: new Date().toISOString(),
+        provider: 'replicate',
+      }).catch(() => {});
+    } catch {}
 
     // Start prediction using standard predictions endpoint with version
     const startResponse = await fetch('https://api.replicate.com/v1/predictions', {

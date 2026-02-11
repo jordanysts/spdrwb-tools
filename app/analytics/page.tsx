@@ -99,10 +99,23 @@ function getFriendlyName(key: string): string {
 }
 
 export default function AnalyticsPage() {
+  const [authenticated, setAuthenticated] = useState(false)
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [days, setDays] = useState(7)
   const [activeTab, setActiveTab] = useState<'providers' | 'api' | 'pages' | 'users'>('providers')
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (password === 'Doug') {
+      setAuthenticated(true)
+      setPasswordError(false)
+    } else {
+      setPasswordError(true)
+    }
+  }
 
   const fetchAnalytics = useCallback(async () => {
     setLoading(true)
@@ -118,8 +131,8 @@ export default function AnalyticsPage() {
   }, [days])
 
   useEffect(() => {
-    fetchAnalytics()
-  }, [fetchAnalytics])
+    if (authenticated) fetchAnalytics()
+  }, [fetchAnalytics, authenticated])
 
   // Provider entries
   const providerEntries = data
@@ -163,6 +176,33 @@ export default function AnalyticsPage() {
 
   const maxApiCount = apiEntries.length > 0 ? apiEntries[0][1].total : 1
   const maxPageCount = pageEntries.length > 0 ? pageEntries[0][1].total : 1
+
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <form onSubmit={handlePasswordSubmit} className="bg-gray-50 border border-gray-200 rounded-2xl p-8 w-full max-w-sm text-center">
+          <BarChart3 className="w-10 h-10 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Analytics</h2>
+          <p className="text-sm text-gray-500 mb-6">Enter the password to access.</p>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setPasswordError(false) }}
+            placeholder="Password"
+            autoFocus
+            className={`w-full border rounded-xl px-4 py-3 text-sm text-center focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent mb-3 ${passwordError ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
+          />
+          {passwordError && <p className="text-xs text-red-500 mb-3">Incorrect password</p>}
+          <button
+            type="submit"
+            className="w-full py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
+          >
+            Access
+          </button>
+        </form>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white">
